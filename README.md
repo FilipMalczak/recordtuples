@@ -1,8 +1,14 @@
 # recordtuples
 
 [![Java CI](https://github.com/FilipMalczak/recordtuples/actions/workflows/ci.yaml/badge.svg)](https://github.com/FilipMalczak/recordtuples/actions/workflows/ci.yaml)
+[![](https://jitpack.io/v/FilipMalczak/recordtuples.svg)](https://jitpack.io/#FilipMalczak/recordtuples)
 
 Typed tuples based on records for Java. As simple as that.
+
+> A summary of the project comes first; then you'll find usage instructions and at the end there is a code snippet that
+> may be pretty explanatory.
+
+## Details
 
 Tuples are a tricky thing. Some love them, some hate them. Nontheless, there is a niche on the market that for a long
 time has been filled by [javatuples](https://github.com/javatuples/javatuples).
@@ -12,7 +18,7 @@ So, here we go.
 
 Most of the sources of this project are generated. Have a look at [recordDefinition(...) method in the buildscript](./build.gradle).
 
-No Javadoc, no tutorials, nothing. It is what you can expect. An example of sources for `Pair` can be found at the end
+No Javadoc, no tutorials, nothing. It is what you can expect. An example of sources for `Triplet` can be found at the end
 of this README.
 
 Names are mimicking Javatuples naming, but we only provide to 8-element tuple and we add an empty one. They (the names) are:
@@ -48,3 +54,81 @@ That is the exact reason for introducing `Empty` record. Without it `Unit` could
 itself also implements `Tuple<Void, Empty>` - its head is always null. For consistency `Empty` also has `of()` and `reverse()`
 methods. It is a soft singleton - as long as you don't use the constructor explicitly, `of()` will return static instance,
 and `reverse()` and `getTail()` always return `this`.
+
+## Using it
+
+To start using this you'll need JDK14+ (and may need to tweak preview features on your own), since it exploits records.
+
+Hosting is handled via [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/v0.1.0).
+
+Current version is [0.1.0](https://github.com/FilipMalczak/recordtuples/releases/tag/v0.1.0) and isn't expected to be
+bumped anytime soon (since there aren't many features that tuples can have).
+
+### Gradle
+
+    allprojects {
+      repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+      }
+    }
+    
+    dependencies {
+      implementation 'com.github.FilipMalczak:recordtuples:Tag'
+    }
+
+### Maven
+
+    <repositories>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+    
+    (...)
+    
+    <dependency>
+	    <groupId>com.github.FilipMalczak</groupId>
+	    <artifactId>recordtuples</artifactId>
+	    <version>0.1.0</version>
+	</dependency>
+
+### Others
+
+Look it up on [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/v0.1.0).
+
+## Example source of `Triplet`
+
+    public record Triplet<T0, T1, T2>(
+        T0 v0,
+        T1 v1,
+        T2 v2
+    ) implements Tuple<T0, Pair<T1, T2>> {
+        public static <T0, T1, T2> Triplet<T0, T1, T2> of(T0 v0, T1 v1, T2 v2){
+            return new Triplet<>(v0, v1, v2);
+        }
+    
+        @Override
+        public T0 getHead(){ return v0; }
+        
+        @Override
+        public Pair<T1, T2> getTail(){ return Pair.of(v1, v2); }
+    
+        @Override
+        public int size(){ return 3; }
+        
+        public Triplet<T2, T1, T0> reverse(){ return of(v2, v1, v0); }
+    
+        public T0 get0() { return v0; }
+        public T1 get1() { return v1; }
+        public T2 get2() { return v2; }
+    
+        public <T> Triplet<T, T1, T2> with0(T v) { return of(v, v1, v2); }
+        public <T> Triplet<T0, T, T2> with1(T v) { return of(v0, v, v2); }
+        public <T> Triplet<T0, T1, T> with2(T v) { return of(v0, v1, v); }
+    
+        public <T> Triplet<T, T1, T2> map0(Function<T0, T> mapper) { return with0(mapper.apply(v0)); }
+        public <T> Triplet<T0, T, T2> map1(Function<T1, T> mapper) { return with1(mapper.apply(v1)); }
+        public <T> Triplet<T0, T1, T> map2(Function<T2, T> mapper) { return with2(mapper.apply(v2)); }
+    }
