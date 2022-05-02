@@ -11,24 +11,36 @@ java {
 }
 
 group = "com.github.filipmalczak"
-version = '0.0.1-SNAPSHOT'
+version = '0.1.0'
 
 repositories {
   mavenCentral()
 }
 
-def recordDefinition(String name, int arity) {
+def recordDefinition(String name, String tailName, int arity) {
     int x = arity-1
     String genericsDeclaration = "<${(0..x).collect { "T$it" }.join(", ")}>"
+    String tailGenericsDeclaration = x > 0 ? "<${(1..x).collect { "T$it" }.join(", ")}>" : ""
     String fields = "${(0..x).collect { "T$it v$it" }.join(", ")}"
     String names = "${(0..x).collect { "v$it" }.join(", ")}"
+    String tailNames =  x > 0 ? "${(1..x).collect { "v$it" }.join(", ")}" : ""
+    //todo add static of (x, tail)
     """
 public record ${name}${genericsDeclaration}(
     ${fields.replaceAll(", ", ",\n    ")}
-){
+) implements Tuple<T0, ${tailName}${tailGenericsDeclaration}> {
     public static ${genericsDeclaration} ${name}${genericsDeclaration} of($fields){
         return new ${name}<>($names);
     }
+    
+    @Override
+    public T0 getHead(){ return v0; }
+    
+    @Override
+    public ${tailName}${tailGenericsDeclaration} getTail(){ return ${tailName}.of(${tailNames}); }
+
+    @Override
+    public int size(){ return ${arity}; }
     
     public $name<${(x..0).collect { "T$it" }.join(", ")}> reverse(){ return of(${(x..0).collect { "v$it" }.join(", ")}); }
 
@@ -47,12 +59,12 @@ ${(0..x).collect {
 """
 }
 
-String recordJavaSource(String name, int arity){
+String recordJavaSource(String name, String tailName, int arity){
     """package ${BASE_PKG};
 
 import java.util.function.Function;
 
-${recordDefinition(name, arity)}
+${recordDefinition(name, tailName, arity)}
 """
 }
 
@@ -65,20 +77,20 @@ task prepareSourceSet(group: "generation", description: "Make the directory to s
 
 task generateTupleSources(group: "generation", description: "Generate the actual sources", dependsOn: prepareSourceSet) {
     doLast {
-        BiConsumer generate = (name, arity) -> {
+        def generate = (name, tailName, arity) -> {
             file(
                 "src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}${File.separator}${name}.java"
             )
-            .withWriter { it.print(recordJavaSource(name, arity)) }
+            .withWriter { it.print(recordJavaSource(name, tailName, arity)) }
         }
-        generate.accept("Unit", 1)
-        generate.accept("Pair", 2)
-        generate.accept("Triplet", 3)
-        generate.accept("Quartet", 4)
-        generate.accept("Quintet", 5)
-        generate.accept("Sextet", 6)
-        generate.accept("Septet", 7)
-        generate.accept("Octet", 8)
+        generate("Unit", "Empty", 1)
+        generate("Pair", "Unit", 2)
+        generate("Triplet", "Pair", 3)
+        generate("Quartet", "Triplet", 4)
+        generate("Quintet", "Quartet", 5)
+        generate("Sextet", "Quintet", 6)
+        generate("Septet", "Sextet", 7)
+        generate("Octet", "Septet", 8)
     }
 }
 
