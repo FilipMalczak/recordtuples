@@ -1,0 +1,120 @@
+import java.util.function.BiConsumer
+
+plugins {
+    id 'java-library'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(16)
+    }
+}
+
+group = "com.github.filipmalczak"
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+def recordDefinition(String name, int arity) {
+    int x = arity-1
+    String genericsDeclaration = "<${(0..x).collect { "T$it" }.join(", ")}>"
+    String fields = "${(0..x).collect { "T$it v$it" }.join(", ")}"
+    String names = "${(0..x).collect { "v$it" }.join(", ")}"
+    """
+public record ${name}${genericsDeclaration}(
+    ${fields.replaceAll(", ", ",\n    ")}
+){
+${(0..x).collect {
+    "    public T$it get$it() { return v$it; }"
+}.join("\n")}
+
+    public static ${genericsDeclaration} ${name}${genericsDeclaration} of($fields){
+        return new ${name}<>($names);
+    }
+    
+${(0..x).collect {
+        "    public <T> ${name}${genericsDeclaration.replace("T$it", "T")} with$it(T v) { return of(${names.replace("v$it", "v")}); }"
+    }.join("\n")}
+}
+"""
+}
+
+String recordJavaSource(String name, int arity){
+    """package ${BASE_PKG};
+
+${recordDefinition(name, arity)}
+"""
+}
+
+
+task prepareSourceSet(group: "generation", description: "Make the directory to store the sources") {
+    doLast {
+        file("src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}"). mkdirs()
+    }
+}
+
+task generateTupleSources(group: "generation", description: "Generate the actual sources", dependsOn: prepareSourceSet) {
+    doLast {
+        BiConsumer generate = (name, arity) -> { file("src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}${File.separator}${name}.java") << recordJavaSource(name, arity) }
+        generate.accept("Single", 1)
+        generate.accept("Pair", 2)
+        generate.accept("Triplet", 3)
+        generate.accept("Quartet", 4)
+        generate.accept("Quintet", 5)
+        generate.accept("Sextet", 6)
+        generate.accept("Septet", 7)
+        generate.accept("Octet", 8)
+    }
+}
+
+clean {
+    delete "src${File.separator}main${File.separator}generatedJava"
+}
+
+compileJava.dependsOn generateTupleSources
+
+sourceSets {
+    main {
+        java {
+            srcDir "src${File.separator}main${File.separator}generatedJava"
+        }
+    }
+}
+
+
+dependencyManagement {
+    dependencies {
+        dependency 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+        dependency 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    }
+
+}
+
+dependencies {
+    //testing
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test) {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs += '--enable-preview'
+}
+
+wrapper {
+    gradleVersion = "7.1.1"
+    distributionType = Wrapper.DistributionType.ALL
+}
