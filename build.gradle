@@ -26,16 +26,22 @@ def recordDefinition(String name, int arity) {
 public record ${name}${genericsDeclaration}(
     ${fields.replaceAll(", ", ",\n    ")}
 ){
-${(0..x).collect {
-    "    public T$it get$it() { return v$it; }"
-}.join("\n")}
-
     public static ${genericsDeclaration} ${name}${genericsDeclaration} of($fields){
         return new ${name}<>($names);
     }
     
+    public $name<${(x..0).collect { "T$it" }.join(", ")}> reverse(){ return of(${(x..0).collect { "v$it" }.join(", ")}); }
+
+${(0..x).collect {
+    "    public T$it get$it() { return v$it; }"
+}.join("\n")}
+
 ${(0..x).collect {
         "    public <T> ${name}${genericsDeclaration.replace("T$it", "T")} with$it(T v) { return of(${names.replace("v$it", "v")}); }"
+    }.join("\n")}
+
+${(0..x).collect {
+        "    public <T> ${name}${genericsDeclaration.replace("T$it", "T")} map$it(Function<T$it, T> mapper) { return with$it(mapper.apply(v$it)); }"
     }.join("\n")}
 }
 """
@@ -43,6 +49,8 @@ ${(0..x).collect {
 
 String recordJavaSource(String name, int arity){
     """package ${BASE_PKG};
+
+import java.util.function.Function;
 
 ${recordDefinition(name, arity)}
 """
