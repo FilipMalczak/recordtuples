@@ -2,12 +2,11 @@ import java.util.function.BiConsumer
 
 plugins {
     id 'java-library'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(16)
+        languageVersion = JavaLanguageVersion.of(14)
     }
 }
 
@@ -58,8 +57,13 @@ task prepareSourceSet(group: "generation", description: "Make the directory to s
 
 task generateTupleSources(group: "generation", description: "Generate the actual sources", dependsOn: prepareSourceSet) {
     doLast {
-        BiConsumer generate = (name, arity) -> { file("src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}${File.separator}${name}.java") << recordJavaSource(name, arity) }
-        generate.accept("Single", 1)
+        BiConsumer generate = (name, arity) -> {
+            file(
+                "src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}${File.separator}${name}.java"
+            )
+            .withWriter { it.print(recordJavaSource(name, arity)) }
+        }
+        generate.accept("Unit", 1)
         generate.accept("Pair", 2)
         generate.accept("Triplet", 3)
         generate.accept("Quartet", 4)
@@ -85,33 +89,8 @@ sourceSets {
 }
 
 
-dependencyManagement {
-    dependencies {
-        dependency 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-        dependency 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    }
-
-}
-
-dependencies {
-    //testing
-    testImplementation 'org.junit.jupiter:junit-jupiter-api'
-}
-
-test {
-    useJUnitPlatform()
-}
-
 tasks.withType(JavaCompile) {
     options.compilerArgs += "--enable-preview"
-}
-
-tasks.withType(Test) {
-    jvmArgs += "--enable-preview"
-}
-
-tasks.withType(JavaExec) {
-    jvmArgs += '--enable-preview'
 }
 
 wrapper {
