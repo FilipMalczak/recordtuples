@@ -13,7 +13,7 @@ Typed tuples based on records for Java. As simple as that.
 Tuples are a tricky thing. Some love them, some hate them. Nontheless, there is a niche on the market that for a long
 time has been filled by [javatuples](https://github.com/javatuples/javatuples).
 
-Unfortunately, that project is a bit stale. JDK14 introduced records, which are a perfect tool to implement tuples.
+Unfortunately, that project is a bit stale. JDK14 introduced (and JDK16 stabilized) records, which are a perfect tool to implement tuples.
 So, here we go.
 
 Most of the sources of this project are generated. Have a look at [recordDefinition(...) method in the buildscript](./build.gradle).
@@ -57,7 +57,7 @@ and `reverse()` and `getTail()` always return `this`.
 
 ## Using it
 
-To start using this you'll need JDK14+ (and may need to tweak preview features on your own), since it exploits records.
+To start using this you'll need JDK16+ since it exploits records.
 
 Hosting is handled via [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/v0.2.0).
 
