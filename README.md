@@ -59,10 +59,13 @@ and `reverse()` and `getTail()` always return `this`.
 
 To start using this you'll need JDK14+ (and may need to tweak preview features on your own), since it exploits records.
 
-Hosting is handled via [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/v0.1.0).
+Hosting is handled via [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/v0.2.0).
 
-Current version is [0.1.0](https://github.com/FilipMalczak/recordtuples/releases/tag/0.1.0) and isn't expected to be
+Current version is [0.2.0](https://github.com/FilipMalczak/recordtuples/releases/tag/0.2.0) and isn't expected to be
 bumped anytime soon (since there aren't many features that tuples can have).
+
+> 0.1.0 used JDK14 with enabled preview features, which was a mistake. Bumped the version to 0.2.0 instead of 0.1.1 for
+> clarity.
 
 ### Gradle
 
@@ -74,7 +77,7 @@ bumped anytime soon (since there aren't many features that tuples can have).
     }
     
     dependencies {
-      implementation 'com.github.FilipMalczak:recordtuples:0.1.0'
+      implementation 'com.github.FilipMalczak:recordtuples:0.2.0'
     }
 
 ### Maven
@@ -91,12 +94,12 @@ bumped anytime soon (since there aren't many features that tuples can have).
     <dependency>
 	    <groupId>com.github.FilipMalczak</groupId>
 	    <artifactId>recordtuples</artifactId>
-	    <version>0.1.0</version>
+	    <version>0.2.0</version>
 	</dependency>
 
 ### Others
 
-Look it up on [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/0.1.0).
+Look it up on [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/0.2.0).
 
 ## Example source of `Triplet`
 
