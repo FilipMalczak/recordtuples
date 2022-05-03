@@ -61,7 +61,7 @@ To start using this you'll need JDK14+ (and may need to tweak preview features o
 
 Hosting is handled via [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/v0.1.0).
 
-Current version is [0.1.0](https://github.com/FilipMalczak/recordtuples/releases/tag/v0.1.0) and isn't expected to be
+Current version is [0.1.0](https://github.com/FilipMalczak/recordtuples/releases/tag/0.1.0) and isn't expected to be
 bumped anytime soon (since there aren't many features that tuples can have).
 
 ### Gradle
@@ -74,7 +74,7 @@ bumped anytime soon (since there aren't many features that tuples can have).
     }
     
     dependencies {
-      implementation 'com.github.FilipMalczak:recordtuples:Tag'
+      implementation 'com.github.FilipMalczak:recordtuples:0.1.0'
     }
 
 ### Maven
@@ -96,7 +96,7 @@ bumped anytime soon (since there aren't many features that tuples can have).
 
 ### Others
 
-Look it up on [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/v0.1.0).
+Look it up on [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/0.1.0).
 
 ## Example source of `Triplet`
 
