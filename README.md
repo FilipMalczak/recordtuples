@@ -2,6 +2,7 @@
 
 [![Java CI](https://github.com/FilipMalczak/recordtuples/actions/workflows/ci.yaml/badge.svg)](https://github.com/FilipMalczak/recordtuples/actions/workflows/ci.yaml)
 [![](https://jitpack.io/v/FilipMalczak/recordtuples.svg)](https://jitpack.io/#FilipMalczak/recordtuples)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Typed tuples based on records for Java. As simple as that.
 
