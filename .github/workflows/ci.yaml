@@ -21,3 +21,14 @@ jobs:
         uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
         with:
           arguments: build
+      - name: Print sources
+        shell: bash
+        run: |
+          for file in $(ls -a1 src/main/generatedJava/com/github/filipmalczak/recordtuples)
+          do
+            echo "================================================================================================"
+            echo $file
+            echo "------------------------------------------------------------------------------------------------"
+            cat src/main/generatedJava/com/github/filipmalczak/recordtuples/$file
+          done
+          echo "================================================================================================"
