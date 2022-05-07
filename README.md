@@ -21,6 +21,10 @@ Most of the sources of this project are generated. Have a look at [recordDefinit
 No Javadoc, no tutorials, nothing. It is what you can expect. An example of sources for `Triplet` can be found at the end
 of this README.
 
+All the classes are in the `com.github.filipmalczak.recordtuples` package.
+
+### Tuples
+
 Names are mimicking Javatuples naming, but we only provide to 8-element tuple and we add an empty one. They (the names) are:
 - `Empty` 
 - `Unit`
@@ -45,6 +49,8 @@ All of them, besides `Empty` (for which it wouldn't make any sense) also have:
 - `mapX(Function<TX, T> mapper)` methods (which applies given function to xth component and return a tuple with that component
   replaced by the outcome)
 
+#### Tuple interface
+
 Besides, there is a [Tuple interface](src/main/java/com/github/filipmalczak/recordtuples/Tuple.java) implemented by all 
 the records. If has 2 generic parameters: `Head` (describing the type of the first element) and `Tail extends Tuple` (the type of
 tuple consisting of all the elements but the first). For example `Triplet<T0, T1, T2>(...) implements Tuple<T0, Pair<T1, T2>>`.
@@ -55,17 +61,51 @@ itself also implements `Tuple<Void, Empty>` - its head is always null. For consi
 methods. It is a soft singleton - as long as you don't use the constructor explicitly, `of()` will return static instance,
 and `reverse()` and `getTail()` always return `this`.
 
+### Comparing
+
+Making tuples `Comparable` would not be trivial, to say the least. Instead we provide a set of common comparators. 
+You can find them in `TupleComparators` utility class. It has static utility classes for each non-empty tuple type, so the
+general structure looks like
+
+    public final class TupleComparators {
+        private TupleComparators() {}
+    
+        public static final class Units {
+            private Units() {}
+    
+            // comparator factories
+        }
+    }
+
+For each type, there are following methods:
+
+    static <T> Comparator<TupleType<Generics>> comparingX(Comparator<T> delegate){
+        return (u1, u2) -> delegate.compare(u1.get0(), u2.get0());
+    }
+    
+    static <T extends Comparable<T>> Comparator<TupleType<...>> comparingX(){
+        return comparing0(Comparable::compareTo);
+    }
+
+where `TupleType` is quite obvious (`Unit`, `Pair`, `Triplet` and so on), `X` is field index and `Generics` are all the 
+generic parameters specified as `?`, besides the `X`th, which is specified to be `T`, for example:
+
+    static <T extends Comparable<T>> Comparator<Triplet<?, T, ?>> comparing1(){
+        return comparing1(Comparable::compareTo);
+    }
+
 ## Using it
 
 To start using this you'll need JDK16+ since it exploits records.
 
 Hosting is handled via [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/v0.2.0).
 
-Current version is [0.2.0](https://github.com/FilipMalczak/recordtuples/releases/tag/0.2.0) and isn't expected to be
-bumped anytime soon (since there aren't many features that tuples can have).
+Current version is [0.3.0-SNAPSHOT](https://github.com/FilipMalczak/recordtuples/treee/0.3.0).
 
 > 0.1.0 used JDK14 with enabled preview features, which was a mistake. Bumped the version to 0.2.0 instead of 0.1.1 for
-> clarity.
+> clarity, when forcing usage of JDK16+.
+
+> TODO make some kind of a changelod 
 
 ### Gradle
 

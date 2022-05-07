@@ -11,7 +11,7 @@ java {
 }
 
 group = "com.github.filipmalczak"
-version = '0.2.0'
+version = '0.3.0-SNAPSHOT'
 
 repositories {
   mavenCentral()
@@ -75,22 +75,59 @@ task prepareSourceSet(group: "generation", description: "Make the directory to s
     }
 }
 
+def definitions = {
+    property("tuples").split(",").collect { name ->
+        [
+            name: name,
+            tailName: property("tuples.${name}.tail"),
+            size: property("tuples.${name}.size") as int
+        ]
+    }
+
+}
+
 task generateTupleSources(group: "generation", description: "Generate the actual sources", dependsOn: prepareSourceSet) {
     doLast {
-        def generate = (name, tailName, arity) -> {
+        def generate =  (name, tailName, arity) -> {
+//            def name = data.name
+//            def tailName = data.tailName
+//            def arity = data.size
             file(
                 "src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}${File.separator}${name}.java"
             )
             .withWriter { it.print(recordJavaSource(name, tailName, arity)) }
         }
-        generate("Unit", "Empty", 1)
-        generate("Pair", "Unit", 2)
-        generate("Triplet", "Pair", 3)
-        generate("Quartet", "Triplet", 4)
-        generate("Quintet", "Quartet", 5)
-        generate("Sextet", "Quintet", 6)
-        generate("Septet", "Sextet", 7)
-        generate("Octet", "Septet", 8)
+        definitions().each { generate(it.name, it.tailName, it.size)}
+
+        file(
+            "src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}${File.separator}TupleComparators.java"
+        ).withWriter {
+            it.print("""
+package com.github.filipmalczak.recordtuples;
+
+import java.util.Comparator;
+
+public final class TupleComparators {
+    private TupleComparators(){}
+    
+${definitions().collect(data -> {
+"""    public static final class ${data.name}s {
+        private ${data.name}s(){}
+        
+${(0..(data.size-1)).collect( idx -> {
+"""        static <T> Comparator<${data.name}<${(0..(data.size-1)).collect({ it == idx ? "T" : "?" }).join(", ")}>> comparing$idx(Comparator<T> delegate){
+            return (u1, u2) -> delegate.compare(u1.get$idx(), u2.get$idx());
+        }
+    
+        static <T extends Comparable<T>> Comparator<${data.name}<${(0..(data.size-1)).collect({ it == idx ? "T" : "?" }).join(", ")}>> comparing$idx(){
+            return comparing$idx(Comparable::compareTo);
+        }"""}).join("\n\n")}
+    }"""
+        }).join("\n\n")
+}
+}
+""")
+        }
     }
 }
 
