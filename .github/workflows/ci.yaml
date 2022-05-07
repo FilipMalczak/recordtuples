@@ -24,7 +24,7 @@ jobs:
       - name: Print sources
         shell: bash
         run: |
-          for file in $(ls -a1 ./src/main/generatedJava/com/github/filipmalczak/recordtuples)
+          for file in $(ls -1 ./src/main/generatedJava/com/github/filipmalczak/recordtuples)
           do
             echo "================================================================================================"
             echo $file
