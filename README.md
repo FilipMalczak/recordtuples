@@ -21,7 +21,9 @@ Most of the sources of this project are generated. Have a look at [recordDefinit
 No Javadoc, no tutorials, nothing. It is what you can expect. An example of sources for `Triplet` can be found at the end
 of this README.
 
-All the classes are in the `com.github.filipmalczak.recordtuples` package.
+All the classes are in the `com.github.filipmalczak.recordtuples` package. 
+[CI](https://github.com/FilipMalczak/recordtuples/actions) is configured to print all the generated sources in a dedicated
+job, so if you wanna look up how the sources look like, look into "Print sources" step.
 
 ### Tuples
 
