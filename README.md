@@ -128,6 +128,9 @@ component types are comparable. For example for pairs it looks like:
 
 To start using this you'll need JDK16+ since it exploits records.
 
+> Both JitPack and GitHub Actions are using JDK17, as it is the earliest LTS that supports records. You shouldn't
+> linger with updating, so go for it.
+
 Hosting is handled via [jitpack](https://jitpack.io/#FilipMalczak/recordtuples).
 
 Current version is [0.3.0-SNAPSHOT](https://github.com/FilipMalczak/recordtuples/tree/0.3.0).
