@@ -9,13 +9,13 @@ class ComparatorsSource {
     List<TupleDefinition> definitions
 
     private String comparingX(String name, int x, int maxX){
-"""        static <T> Comparator<${name}<${(0..maxX).collect({ it == x ? "T" : "?" }).join(", ")}>> comparing$x(Comparator<T> delegate){
+"""        public static <T> Comparator<${name}<${(0..maxX).collect({ it == x ? "T" : "?" }).join(", ")}>> comparing$x(Comparator<T> delegate){
             return (u1, u2) -> delegate.compare(u1.get$x(), u2.get$x());
         }"""
     }
 
     private String comparingComparableX(String name, int x, int maxX){
-"""        static <T extends Comparable<T>> Comparator<${name}<${(0..maxX).collect({ it == x ? "T" : "?" }).join(", ")}>> comparing$x(){
+"""        public static <T extends Comparable<T>> Comparator<${name}<${(0..maxX).collect({ it == x ? "T" : "?" }).join(", ")}>> comparing$x(){
             return comparing$x(Comparable::compareTo);
         }"""
     }
@@ -35,7 +35,7 @@ class ComparatorsSource {
         }
         lines += [ "                return u1.v${maxX}().compareTo(u2.v${maxX}());",
                    "            };" ]
-        """        static <$genericsDef> Comparator<${name}<$genericsNames>> naturalOrdering(){
+        """        public static <$genericsDef> Comparator<${name}<$genericsNames>> naturalOrdering(){
 ${lines.join("\n")}
         }"""
     }
