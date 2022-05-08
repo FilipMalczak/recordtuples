@@ -2,9 +2,3 @@ plugins {
     id 'groovy'
 }
 
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
