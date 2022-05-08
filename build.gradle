@@ -1,4 +1,7 @@
-import java.util.function.BiConsumer
+import com.filipmalczak.recordtuples.ComparatorsSource
+import com.filipmalczak.recordtuples.FsLayout
+import com.filipmalczak.recordtuples.TupleSource
+import com.github.filipmalczak.recordtuples.TupleDefinition
 
 plugins {
     id 'java-library'
@@ -17,122 +20,24 @@ repositories {
   mavenCentral()
 }
 
-def recordDefinition(String name, String tailName, int arity) {
-    int x = arity-1
-    String genericsDeclaration = "<${(0..x).collect { "T$it" }.join(", ")}>"
-    String tailGenericsDeclaration = x > 0 ? "<${(1..x).collect { "T$it" }.join(", ")}>" : ""
-    String fields = "${(0..x).collect { "T$it v$it" }.join(", ")}"
-    String names = "${(0..x).collect { "v$it" }.join(", ")}"
-    String tailNames =  x > 0 ? "${(1..x).collect { "v$it" }.join(", ")}" : ""
-    //todo add static of (x, tail)
-    """
-public record ${name}${genericsDeclaration}(
-    ${fields.replaceAll(", ", ",\n    ")}
-) implements Tuple<T0, ${tailName}${tailGenericsDeclaration}> {
-    public static ${genericsDeclaration} ${name}${genericsDeclaration} of($fields){
-        return new ${name}<>($names);
-    }
-    
-    @Override
-    public T0 getHead(){ return v0; }
-    
-    @Override
-    public ${tailName}${tailGenericsDeclaration} getTail(){ return ${tailName}.of(${tailNames}); }
-
-    @Override
-    public int size(){ return ${arity}; }
-    
-    public $name<${(x..0).collect { "T$it" }.join(", ")}> reverse(){ return of(${(x..0).collect { "v$it" }.join(", ")}); }
-
-${(0..x).collect {
-    "    public T$it get$it() { return v$it; }"
-}.join("\n")}
-
-${(0..x).collect {
-        "    public <T> ${name}${genericsDeclaration.replace("T$it", "T")} with$it(T v) { return of(${names.replace("v$it", "v")}); }"
-    }.join("\n")}
-
-${(0..x).collect {
-        "    public <T> ${name}${genericsDeclaration.replace("T$it", "T")} map$it(Function<T$it, T> mapper) { return with$it(mapper.apply(v$it)); }"
-    }.join("\n")}
-}
-"""
-}
-
-String recordJavaSource(String name, String tailName, int arity){
-    """package ${BASE_PKG};
-
-import java.util.function.Function;
-
-${recordDefinition(name, tailName, arity)}
-"""
-}
-
-
-task prepareSourceSet(group: "generation", description: "Make the directory to store the sources") {
+task generateTupleSources(group: "generation", description: "Generate the actual sources") {
     doLast {
-        file("src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}"). mkdirs()
-    }
-}
-
-def definitions = {
-    property("tuples").split(",").collect { name ->
-        [
-            name: name,
-            tailName: property("tuples.${name}.tail"),
-            size: property("tuples.${name}.size") as int
-        ]
-    }
-
-}
-
-task generateTupleSources(group: "generation", description: "Generate the actual sources", dependsOn: prepareSourceSet) {
-    doLast {
-        def generate =  (name, tailName, arity) -> {
-//            def name = data.name
-//            def tailName = data.tailName
-//            def arity = data.size
-            file(
-                "src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}${File.separator}${name}.java"
-            )
-            .withWriter { it.print(recordJavaSource(name, tailName, arity)) }
+        def definitions = TupleDefinition.load(project.&property)
+        def basePkg = project.property("basePackage")
+        def layout = new FsLayout(project.rootDir, basePkg)
+        definitions.each {
+            layout.sourceFile(it.name()).withWriter { w ->
+                w.print(new TupleSource(basePkg, it))
+            }
         }
-        definitions().each { generate(it.name, it.tailName, it.size)}
-
-        file(
-            "src${File.separator}main${File.separator}generatedJava${File.separator}${BASE_PKG.replaceAll("[.]", File.separator)}${File.separator}TupleComparators.java"
-        ).withWriter {
-            it.print("""
-package com.github.filipmalczak.recordtuples;
-
-import java.util.Comparator;
-
-public final class TupleComparators {
-    private TupleComparators(){}
-    
-${definitions().collect(data -> {
-"""    public static final class ${data.name}s {
-        private ${data.name}s(){}
-        
-${(0..(data.size-1)).collect( idx -> {
-"""        static <T> Comparator<${data.name}<${(0..(data.size-1)).collect({ it == idx ? "T" : "?" }).join(", ")}>> comparing$idx(Comparator<T> delegate){
-            return (u1, u2) -> delegate.compare(u1.get$idx(), u2.get$idx());
-        }
-    
-        static <T extends Comparable<T>> Comparator<${data.name}<${(0..(data.size-1)).collect({ it == idx ? "T" : "?" }).join(", ")}>> comparing$idx(){
-            return comparing$idx(Comparable::compareTo);
-        }"""}).join("\n\n")}
-    }"""
-        }).join("\n\n")
-}
-}
-""")
+        layout.sourceFile("TupleComparators").withWriter { w ->
+            w.print(new ComparatorsSource(basePkg, definitions))
         }
     }
 }
 
 clean {
-    delete "src${File.separator}main${File.separator}generatedJava"
+    delete new FsLayout(project.rootDir, project.property("basePackage")).generatedSourcesDir
 }
 
 compileJava.dependsOn generateTupleSources
@@ -140,7 +45,7 @@ compileJava.dependsOn generateTupleSources
 sourceSets {
     main {
         java {
-            srcDir "src${File.separator}main${File.separator}generatedJava"
+            srcDir new FsLayout(project.rootDir, project.property("basePackage")).generatedSourcesDir
         }
     }
 }

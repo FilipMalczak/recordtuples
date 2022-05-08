@@ -16,7 +16,10 @@ time has been filled by [javatuples](https://github.com/javatuples/javatuples).
 Unfortunately, that project is a bit stale. JDK14 introduced (and JDK16 stabilized) records, which are a perfect tool to implement tuples.
 So, here we go.
 
-Most of the sources of this project are generated. Have a look at [recordDefinition(...) method in the buildscript](./build.gradle).
+Most of the sources of this project are generated. [This](buildSrc/src/main/groovy/com/filipmalczak/recordtuples/TupleSource.groovy) 
+is the class used to generate sources of each tuple, and 
+[this one](buildSrc/src/main/groovy/com/filipmalczak/recordtuples/ComparatorsSource.groovy)
+generates all the comparators.
 
 No Javadoc, no tutorials, nothing. It is what you can expect. An example of sources for `Triplet` can be found at the end
 of this README.
@@ -75,8 +78,16 @@ general structure looks like
         public static final class Units {
             private Units() {}
     
-            // comparator factories
+            (...)// comparator factories
         }
+
+        public static final class Pairs {
+            private Units() {}
+    
+            (...)// comparator factories
+        }
+
+        (...)//Triplets, Quartets and so on
     }
 
 For each type, there are following methods:
@@ -96,18 +107,35 @@ generic parameters specified as `?`, besides the `X`th, which is specified to be
         return comparing1(Comparable::compareTo);
     }
 
+Last, but not least, for each type we also have `naturalOrdering()` comparator, that tries comparing by the first field,
+if they are equal proceeds to compare to the second field, then to third, etc. 
+In other words, `naturalOrdering().compare(Triplet.of(1, 1, 1), Triplet.of(1, 1, 2)) < 0`. It requires that all the
+component types are comparable. For example for pairs it looks like:
+
+    static <T0 extends Comparable<T0>, T1 extends Comparable<T1>> Comparator<Pair<T0, T1>> naturalOrdering(){
+        return (u1, u2) -> {
+            int by0 = u1.v0().compareTo(u2.v0());
+            if (by0 != 0) return by0;
+    
+              return u1.v1().compareTo(u2.v1());
+        };
+    }
+
+> If you think that natural ordering with custom comparators for each field would be useful, please open a GitHub issue;
+> I'd be happy to look into it, but I don't think its worth the effort.
+
 ## Using it
 
 To start using this you'll need JDK16+ since it exploits records.
 
-Hosting is handled via [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/v0.2.0).
+Hosting is handled via [jitpack](https://jitpack.io/#FilipMalczak/recordtuples).
 
-Current version is [0.3.0-SNAPSHOT](https://github.com/FilipMalczak/recordtuples/treee/0.3.0).
+Current version is [0.3.0-SNAPSHOT](https://github.com/FilipMalczak/recordtuples/tree/0.3.0).
 
 > 0.1.0 used JDK14 with enabled preview features, which was a mistake. Bumped the version to 0.2.0 instead of 0.1.1 for
 > clarity, when forcing usage of JDK16+.
 
-> TODO make some kind of a changelod 
+> TODO make some kind of a changelog
 
 ### Gradle
 
@@ -119,7 +147,7 @@ Current version is [0.3.0-SNAPSHOT](https://github.com/FilipMalczak/recordtuples
     }
     
     dependencies {
-      implementation 'com.github.FilipMalczak:recordtuples:0.2.0'
+      implementation 'com.github.FilipMalczak:recordtuples:0.3.0-SNAPSHOT'
     }
 
 ### Maven
@@ -136,12 +164,12 @@ Current version is [0.3.0-SNAPSHOT](https://github.com/FilipMalczak/recordtuples
     <dependency>
 	    <groupId>com.github.FilipMalczak</groupId>
 	    <artifactId>recordtuples</artifactId>
-	    <version>0.2.0</version>
+	    <version>0.3.0-SNAPSHOT</version>
 	</dependency>
 
 ### Others
 
-Look it up on [jitpack](https://jitpack.io/#FilipMalczak/recordtuples/0.2.0).
+Look it up on [jitpack](https://jitpack.io/#FilipMalczak/recordtuples).
 
 ## Example source of `Triplet`
 
