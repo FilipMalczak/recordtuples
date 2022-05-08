@@ -6,7 +6,7 @@
 Typed tuples based on records for Java. As simple as that.
 
 > A summary of the project comes first; then you'll find usage instructions and at the end there is a code snippet that
-> may be pretty explanatory.
+> may be pretty explanatory. 
 
 ## Details
 
