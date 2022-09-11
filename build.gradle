@@ -20,6 +20,11 @@ repositories {
   mavenCentral()
 }
 
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.0.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.0.3'
+}
+
 task generateTupleSources(group: "generation", description: "Generate the actual sources") {
     doLast {
         def definitions = TupleDefinition.load(project.&property)
@@ -48,6 +53,10 @@ sourceSets {
             srcDir new FsLayout(project.rootDir, project.property("basePackage")).generatedSourcesDir
         }
     }
+}
+
+test {
+    useJUnitPlatform()
 }
 
 wrapper {

@@ -10,6 +10,10 @@ Typed tuples based on records for Java. As simple as that.
 
 ## Details
 
+> There are undocumented features too:
+> - Union-like structures
+> - simple util for generic magicians
+
 Tuples are a tricky thing. Some love them, some hate them. Nontheless, there is a niche on the market that for a long
 time has been filled by [javatuples](https://github.com/javatuples/javatuples).
 
@@ -82,7 +86,7 @@ general structure looks like
         }
 
         public static final class Pairs {
-            private Units() {}
+            private Pairs() {}
     
             (...)// comparator factories
         }
@@ -96,7 +100,7 @@ For each type, there are following methods:
         return (u1, u2) -> delegate.compare(u1.get0(), u2.get0());
     }
     
-    static <T extends Comparable<T>> Comparator<TupleType<...>> comparingX(){
+    static <T extends Comparable<T>> Comparator<TupleType<Generics>> comparingX(){
         return comparing0(Comparable::compareTo);
     }
 
